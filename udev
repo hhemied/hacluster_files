@@ -1,0 +1,41 @@
+'''
+## to force udev to reload rules
+    > udevadm control --reload-rules
+    
+    ""Details""
+ Package : udev
+Device Manager for the Linux Kernel
+Manages devices nodes(permissions, symlinks[example: to know if I have many usb (which one is which)], rename) in /Dev
+##it is successor(خليفه) of devfs and hotplug in kernel 2.4
+when I attach or remove devices, some actions will be performed
+Dynamically creates&removes devices files
+provides consistent naming
+provides a user spce API
+All details for the device can be found under /sys since kernel 2.6
+'''
+'''
+
+        "" How it works ""
+Device attached
+Kernel detects it and sysfs is populated with device details.
+Udev receives devices uevent from kernel
+Udev matched its rules "/etc/udev/ruled.d/*.rules" against various device attributes to identify the device and create meaningful symlinks, jset permissions, rename device or run a script.
+'''
+
+1 --> logout and the login to iscsi to check the device name
+2 --> use two sessions one to login and the other to monitor
+  udevadm monitor --env
+  login iscsi again = or logout
+  >> Monitor: Actions, subsystem, kernel, subsystem
+3 --> Query all data about device:
+  >> udevadm info --query=all --path=(/sys)/block/sdf/
+    E = environment
+    P = path
+    S = symlink --> ll /psth to symlink
+    N = name
+4 --> cd /etc/udev/rules.d/
+    > copy from another rule file (number means periority)
+    --- Look at the book
+    example: 
+    ACTION=="add", SUBSYSTEM=="block", ENV{ID_SCSI_SERIAL}=="***", SYMLINK+="myscsi%n"
+    ACTION=="add", SUBSYSTEM=="block", ENV{ID_SCSI_SERIAL}=="***", RUN+="/bin/mount /iscsi"

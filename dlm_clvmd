@@ -1,0 +1,32 @@
+yum install lvm2-cluster
+NOTE :  connecting to cluster manager (cman)
+chkconfig clvmd on
+
+LM : Look management is needed on any system to avoid inconsist data (like if you editing file and someone opens it will show him error)
+DLM : Distributed Look Management
+    Allow nodes to access their shared storage and syncronizing the rgmanager service status
+    if we don't have DLM we may have inconsist data.
+    syncronize the information about which process are trying which file but in cluster case it is resources instead of files
+    
+CLVM: it has the ability to lock the LVM wich is accessed by another node
+    example:
+        I am tring to resize the lv and in the same time from another node trying to delete this lv
+        
+        
+Practise : 
+===========
+1- create lvm
+2- vim /etc/lvm/lvm.conf
+    change : locking_type = 3
+3- ps -ef | grep -i dlm --> check for dlm_controld
+4- service clvmd restart
+5- chkconfig clvmd on
+6- after creating lv we can try to remove it from both nodes
+-----
+lvm
+-----
+pvcreate 
+vgcreate (vgname) (pv path)
+lvcreate -L (size) -n (name) (vgname)
+lvremove (vgname) (lvname)
+mkfs.ext4 (lvname)

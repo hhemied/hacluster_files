@@ -1,0 +1,11 @@
+ 
+yum install device-mapper-multipath
+lsmod |grep -i dm_multipath
+modprobe dm_multipath
+lsmod |grep -i dm_multipath
+mpathconf -h
+mpathconf --user_friendly_names n
+vim /etc/multipath.conf
+/etc/init.d/multipathd restart
+multipath -ll
+chkconfig multipathd on

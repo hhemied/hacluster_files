@@ -1,0 +1,16 @@
+[Luci installation]
+yum install luci
+chkconfig luci on
+service luci restart
+https://luci.cloud.me:8084
+
+[cluster creation]
+click on : Manage Clusters
+click on : Create and fill the form
+
+NOTE : 
+1 - if some nodes fail : try to check cman
+2 - WILL SHOW NOT A CLUSTER MEMEBER IF cannot communicate with cman
+
+
+

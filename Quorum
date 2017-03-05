@@ -1,0 +1,76 @@
+Quorum :
+    * Understanding importance of quorum
+    * Perform Quorum calculation.
+    * Configure cluster votes.
+    
+    -> what is Quorum?
+        In order for a cluster function the nodes must be in agreement on certain facts, like:
+        *which machines are currently cluster member.
+        *where services are running.
+        *which machine are using which resources. etc.
+    for that all importance of voting comes.
+    every node has a vote, and only if more than half of all possible votes are successfully cast "wikk the cluster will be operational"
+    Quorum : the minimum number of votes needed to achieve more than half of the votes.
+    Quorate "if number of votes is achieved the cluster"
+    ---------------
+    split brain:
+    ---
+    caused if service dead on one node but still FS mounted and the other went up and mounted the same FS.
+    
+    why do we need Quorum ?
+    ---
+    if we have 5 nodes and service went down on 3 of 5 so the cluster will be down as it is not quorate so we need quorum to reach the votes to the half number of the running nodes.
+    
+    ----
+    -> Calculation Quorum.
+    first :
+    Expected votes:
+        number of votes expected if all cluster nodes are fully operational and communicating with each other.
+    Total votes:
+        number of votes currently present. this can be lower than the number of expected votes(if some nodes are down or not communicating)
+        
+    
+    Quorum = floor(expected votes / 2 + 1)
+    floor() mean : always round down.
+    
+    Example:
+        Quorum = floor(3/2 +1)
+        Quorum = floor(1.5 + 1)
+        Quorum = floor(2.5)
+        Quorum = 2
+        
+        
+    -> Displaying Quorum.
+    
+    in /etc/cluster/cluster.conf
+        under clusternode > votes
+        
+    ccs_tool lsnode
+    cman_tool status
+    clustat
+    clustat -Q && echo Quorate || echo Not Quotrate
+    "clustat -Q " will exit with 0 if quorate and 1 for not quorate
+====
+Note
+====
+    If you use SNMP monitoring in your infrastructure, you can use this special cluster plugin that Redhat High Availability ship (net-snmp)
+    "/usr/share/doc/cluster-snmp-*/README.snmpd"
+    
+    
+    
+    -> Configure Quorum votes.
+        Edit Quorum votes with luci.
+        Edit votes manually:
+            from /etc/cluster/cluster.conf
+            <clusternode name="node1" nodeid="1" votes="2"/>
+            "DONT FORGET TO CHANGE VERSION NUMBER"
+            cman_tool version -r
+            cman_tool status
+            
+
+Practise:
+=========
+* Displaying Quorum and votes.
+* Adding more votes to a node.
+
+

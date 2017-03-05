@@ -1,0 +1,73 @@
+Two nodes Cluster Issue:
+
+    * Two Nodes issues
+    Quorum: 
+        that the cluster will not be quorate if on node dead.
+        redhat High Availabilty avoid thid by assigning 
+                <cman expected_votes="1" two_node="1"/>
+    Fence Race:
+        Happen when communication between two nodes interrupted but each node still able to fence each other. (either because you use fabric level fencing or because the fencing devices are on a different network from the cluster communication)
+        "If the fence device has serialized access, meaning that only one machine can talk to it a time and this cause no problem"
+        
+    * What is Quorum Disk?
+    
+        Is a shared disk or partition that provides supplemental heuristics to determine nodes fitness.
+        "can also be used as a tie-breaker to determine which node should be fenced"
+        
+        when a quorum disk is configured to a cluster, it will get number of votes to add.
+        
+        the node with the lowest (nodeid) that is currently alive will become the "Master"
+        "the master" is responsible for casting the votes assigned to the quorum disk.
+        
+        Redhat High availability Add-on quorum disk operates by having every node write status updates at regular intervals to their own block on quorum disk. if a node fails to update its block on the quorum disk in a timely manar, the cluster can evict the node. This can be used to detect whether a node that has stopped responding over the network is truly down, or is just having (temporary) network problem, in order for this to work, the cman timeout for evicting nodes based on their network responses should be set at least twice as high as the timeout for evicting nodes based on their quorum disk updates.
+        "cman network timeout is called totem, we can add it by adding <totem token="timeout_in_ms"/> to /etc/cluster/cluster.conf
+        or from luci by enabling expert mode and change totem time out in the network tab of the configure screen"
+        
+        
+    heuristics
+        small tests that run at regular intervals as on all cluster nodes, if node fail to meet the minimum score configured for heuristics it will remove itself from the cluster (by rebooting).
+        used to determine a nodes fitness for running cluster service. eg(by pinging the default gateway on the public network.
+        
+Quorum Disk: 
+    *needs cluster with at least 3 nodes.
+    *should be at least 10 MiB in size.
+    *should available to all cluster members.
+    *replicated or distributed is not suitable for quorum disk.
+    *when using quorum disk it is recommended that you use power fencing and not fabric fencing.
+    
+When to use a Quorum Disk:
+    1- Two node cluster with seperate networks for cluster interconnect and fencing.
+    2- Last-Man-Standing functionality.
+    3- Cluster requiring the ability to give preference to the node owning a service.
+    4- Cluster requiring nodes to meet certain requirements before joining or participating.
+    
+Limitations:
+    * All nodes must have exactly one vote.
+    * Quorum disks support up to maximum sixteen nodes.
+    * All nodeid must be statically configured in cluster.conf, and must be from 1 to 16.
+    * Quorum disks should not be used in an environment that requires failure detections time of less than 10 Seconds.
+    
+
+    * Quorum Disk heuristics
+        check up ...
+        *at least one and maximum 10 of heuristic tests.
+        *are small snippests of code that can be excuted with "sh -c"
+        *TKO= "time to knock out/technical knock out"
+        *if a node fails to meet the minimum score TKO in a row it will remove itself from the cluster by rebooting.
+        
+        
+        
+    * Configuring a Quorum Disk.
+    1- creating a quorum disk partition
+        "create partition on your shared storage"
+        mkqdisk -c <device> -l <label>
+        mkqdisk -L
+        
+    2- Adding Quorum Disk to a cluster
+    from luci > cluster maange > config > QDisk > for heuristics
+        ping -c2 -t2 node1
+    
+Hands On :
+    * Remove a cluster node.
+    * create a Quorum Disk .
+    * Adding Quorum Disk to a cluster.

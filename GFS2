@@ -1,0 +1,102 @@
+GFS2:
+=====
+    Has the ability to amount the same FS in write mode on more than one node; but there is another mechanisme to track the accessed files and lock it.
+Features:
+=========
+* POSIX : (Portable Operating System Interface based on Unix):
+    means support ACL, Quote, Case sensetive
+* Reduces the complexity and overhead of managing
+* Redundant data copy
+* no single point of failure.
+* Scalable
+* support multiple journals.
+    like if we have 2 node cluster we may have two journals. [nummber of journals should be at least the number of nodes using GFS]
+    we can add journals later as we may need.
+
+Functions:
+==========
+* Native FS.
+* Volume management is managed by clvm.
+* Support Quota and other POSIX features.
+
+Why Journaling:
+===============
+* A logical journal stores only changes to file metadata in the journal, and trades fault tolerance for substantially better write performance.
+* A file system with a logical journal still recovers quickly after a crash, but may allow unjournaled file data and journaled metadata to fall out of sync with each other, causing data corruption.
+    For example, appending to a file may involve three separate writes to:
+
+        1- The file's inode, to note in the file's metadata that its size has increased.
+        2- The free space map, to mark out an allocation of space for the to-be-appended data.
+        3- The newly allocated space, to actually write the appended data.
+    In a metadata-only journal, step 3 would not be logged. If step 3 was not done, but steps 1 and 2 are replayed during recovery, the file will be appended with garbage.
+
+* Modification to the FS is sequentially written to a journal [track all things you did on FS]
+
+Things to consider before building GFS2:
+=========================================
+* How many GFS filesystems to create initially.
+* Unique name for every file system.
+* Numbers of journals for GFS FS.
+* which node in the cluster will mount GFS FS.
+* If you are using GNBD, determine how many GNBD server node are needed.
+* determine storage device and partitions to be used for creating logical volumes (clvm) in the FS.
+
+GFS2 Node Locking:
+==================
+* each node has its own page cache.
+* Glock maintaince integrity in cache between nodes.
+* GLock uses dlm as the underlying communication layer.
+* If glock is configured to be a shared mode (dlm locl mode : PR), then the data under the GLock may be cached on one or more nodes at the same time.
+* if the GLock is in exclusive mode (DLM Lock mode : EX), then only a single node may cache data under glock.
+* If another node requests a GLock which cannot be granted immediately, then the DLM sends a message to the node or nodes which currently hold the GLock blocking the new request to ask them to drop their lock.
+
+
+Practise:
+==========
+1- install GFS2
+2- Load GFS2 module into kernel
+    modprobe gfs2
+3- Create GFS2 FS and mount it.
+    *lv
+    *service clvmd status
+    *create partition (lv) and format it with gfs2 FS
+    *mkfs.gfs2 -h
+    *mkfs.gfs2 -j (no of nodes) -p (name of locking protocol) [lock_dlm] -t (name of lock table) [(unique)name of the cluster:name of FS] (partition(lv))
+    *Configure fstab on both nodes
+    *service gfs2 restart && chkconfig gfs2 on
+    *df -h ---> check if it is already mounted autoatically or not.
+    *reboot to check every thing is working fine.
+    
+4- Expand the GFS2.
+    *lvextend -L+100M (lv)
+    *gfs2_grow (path)
+    *df -h
+    
+5- Enable Quota(on, off, account)
+    *man mount.gfs2 --> search for quota.
+    *vim /etc/fstab --> add quota=on
+    *mount -o remount (mountpoint from fstab)
+    *mount |grep gfs2
+    *for testing --> on both nodes
+        -useradd hazem
+        -passwd hazem
+        -getent passwd |grep hazem --> id on both should be same if you are not using ldap.
+        -gfs2_quota -h
+        -gfs2_quota list
+        -gfs2_quota sync --> (force it to sync now instead of waitng 60 sec to sync)
+        -gfs2_quota limit -m -l 300 -u (userid) -f /gfs2 (mountpoint) --> Hard Limit
+        -gfs2_quota warn -m -l 100 -u (userid) -f /gfs2 (mountpoint) --> Soft Limit
+        -gfs2_quota list -f /gfs2 (mountpoint)
+        -now check if sync done well on the other node
+        -create random data to check if it is working fine or not using dd.
+        -if no permission we can give him write on it using setfacl --> be sure fstab has acl
+        
+6- Enabling data journaling, chattr.
+    -chattr +j /gfs2 (mountpoint)
+    -lsattr /gfs2
+    
+7- Adding Journal Dynamically.
+
+8- ACL.
+    -add acl to fstab
+    -setfacl

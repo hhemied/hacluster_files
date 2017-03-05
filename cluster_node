@@ -1,0 +1,4 @@
+ 
+yum install ricci
+chkconfig ricci on
+service ricci restart

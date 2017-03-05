@@ -1,0 +1,39 @@
+[Server]
+
+yum install scsi-target-utils
+service tgtd restart
+chkconfig tgtd on
+### iqn = iscsi qualified name
+tgtadm --lld iscsi --mode target --op new --tid 1 --targetname iqn.2017-02.me.cloud:san.target1
+tgtadm --lld iscsi --mode target --op show
+tgtadm --lld iscsi --mode logicalunit --op new --tid 1 --lun 1 --backing-store /dev/vdb
+tgtadm --lld iscsi --mode target --op show
+tgt-admin --dump >> /etc/tgt/targets.conf
+service tgtd restart
+
+
+### 
+[Adding Username and Password]
+
+--lld <driver> --mode account --op new --user <name> --password <pass>
+--lld <driver> --mode account --op delete --user <name>
+
+[Client]
+yum install iscsi-initiator-utils
+echo "InitiatorName=iqn.2017-02.me.cloud:3252dc6dd8af" > /etc/iscsi/initiatorname.iscsi
+service iscsid restart
+service iscsi restart
+chkconfig iscsid on
+chkconfig iscsi on
+> Discover:
+    iscsiadm --mode discoverydb --type sendtargets --portal 192.168.122.110 --discover
+> Login:
+    iscsiadm --mode node --targetname iqn.2017-02.me.cloud:san.target1 --portal 192.168.122.110:3260 --login
+> Logout:
+    iscsiadm --mode node --targetname iqn.2017-02.me.cloud:san.target1 --portal 192.168.122.110:3260 --logout
+> List Node Recordes:
+    iscsiadm --mode node
+> Nodes Data:
+    /var/lib/iscsi/nodes/
+    
+lsblk

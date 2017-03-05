@@ -1,0 +1,80 @@
+ccs_tool
+ccs_sync [-f] (cluster config file)
+    "change any thing in cluster.conf to destroy node1 then sync file from node2 again"
+cluststat
+cman_tool [nodes] (-a)
+cman_tool status
+clusvcadm
+ccs --> can be installed on the node which has ricci installed
+    yum install ccs
+    ccs --getconf
+    ccs --startall
+    ccs --lsnodes
+
+_____________________
+important:
+_____________________
+-every time you configure cluster.conf file you need to update the version value.
+two_node=1 ---> to prevent split brain
+
+------------------
+Conga --> luci and ricci
+cluster suite --> rgmanager, luci, ricci, cman, corosync and others.
+
+Major Component of the Cluster:
+===============================
+-Cluster Infrastructure.
+-HighAvailability service management.
+-Redhat GFS2 (Global File System)
+-clvmd (Cluster Logical Volume Management).
+-Global Network Block Device (GNBD) --- ISCSI
+-Cluster Administration tools.
+
+=====================================
+*Cluster will be qurated if 50% of nodes are up and running.
+=====================================
+
+*We need luci for the gui management otherwise we can ignore it or install it on any cluster node to not waste resources.
+*And Luci can manage more than one cluster.
+
+cman should be present on every single node: 
+    check wither the node still online or not
+    
+fence: we need it to make a fence because shared stoage should not be accessable by more than one node.
+    fence should be immediatlely to not make any corruption of data on the shared storage
+
+whenever cman becomes not responsive so it is going to fence this node(deattach the shared storage and doing some kind of hard reboot) and decide to reboot it
+
+Network Power Switch:
+    is a power switch which connected to all nodes and make use of fencing to to switch off or reboot the node
+
+Requirements:
+================
+-Up to 16 node, but any cluster with 8 nodes or more, will needs to be subjected to an architecture review to determine supportability.
+
+-Single Site.---> for multisite or stretch clusters (geo clusters):contact redhat support first.
+-Supported fencing HW :
+    *can be power fencing or storage fencing or combination of both.
+    *fencing is required for all nodes in the cluster.
+    *be sure to choose a appropriate fence device before building the cluster:
+        Please contact REDHAT for the updated list.
+        
+-No single point of failuer (every node has more than one NIC)
+-MultiplePath from the node to the shared storage
+-Only one node should access (mounted) the shared stoage.
+-NetworkMnager = Disabled
+-Network Switches should support Multicasting and IGMP.
+    because the communications between cman on all nodes is using multicasting and IGMP.
+    
+-APCI(Advanced Power Configuration Interface) should be disabled on BIOS on every node ---> if not disable when the cluster try to shut this node it will lead to (safe shutdown) and this will take some time [Problem is the mounted shared storage in it] ==> We may need to add kernel parameter in grub.conf (acpi=off)
+***** Specially if you are using ILO or DRAC, you must make powers off immediatlely when shutdown signal is recieved.
+(chkconfig acpid off)
+
+- On RHEL6 only virtualmachines using KVM hypervisor are supported as a cluster resources.
+
+-NetworkPorts:
+    UDP:
+        5404, 5405  corosync, cman
+    TCP:
+        11111, 21064, 16861 ricci, dlm, modclusterd
+        
