@@ -6,7 +6,7 @@
  Package : udev
 Device Manager for the Linux Kernel
 Manages devices nodes(permissions, symlinks[example: to know if I have many usb (which one is which)], rename) in /Dev
-##it is successor(خليفه) of devfs and hotplug in kernel 2.4
+##it is successor of devfs and hotplug in kernel 2.4
 when I attach or remove devices, some actions will be performed
 Dynamically creates&removes devices files
 provides consistent naming

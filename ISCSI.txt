@@ -4,7 +4,7 @@ yum install scsi-target-utils
 service tgtd restart
 chkconfig tgtd on
 ### iqn = iscsi qualified name
-tgtadm --lld iscsi --mode target --op new --tid 1 --targetname iqn.2017-02.me.cloud:san.target1
+tgtadm --lld iscsi --mode target --op new --tid 1 --targetname iqn.2017-02.me.cloud.san.target1
 tgtadm --lld iscsi --mode target --op show
 tgtadm --lld iscsi --mode logicalunit --op new --tid 1 --lun 1 --backing-store /dev/vdb
 tgtadm --lld iscsi --mode target --op show
