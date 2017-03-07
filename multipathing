@@ -5,6 +5,7 @@ modprobe dm_multipath
 lsmod |grep -i dm_multipath
 mpathconf -h
 mpathconf --user_friendly_names n
+man multipath.conf
 vim /etc/multipath.conf
 /etc/init.d/multipathd restart
 multipath -ll
